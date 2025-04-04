@@ -105,7 +105,7 @@
       max-width: 100%;
       height: clamp(100px, 30vh, 150px);
       margin-bottom: clamp(1rem, 2vw, 1.5rem);
-      padding: clamp(0.5rem, 2vw, 1rem);
+      padding: clamp(0.5rem, 2vw, 1рем);
       border: clamp(1px, 0.3vw, 2px) solid var(--blood);
       border-radius: clamp(6px, 1.5vw, 10px);
       background: rgba(20, 20, 20, 0.8);
@@ -316,10 +316,10 @@
     let isSpinning = false;
     let startAngle = 0;
     let arc = 0;
-    let spinTime = 0;
-    const spinTimeTotal = 3000;
+    let spinTimeTotal; // время вращения (устанавливается при каждом запуске)
     let spinAngleStart = 0;
     let spaceTimer = null;
+    let spinStartTime = 0; // добавляем переменную для хранения времени начала вращения
 
     function updateParticipants() {
       const input = inputNames.value;
@@ -382,17 +382,19 @@
       spinSound.currentTime = 0;
       spinSound.play();
       spinAngleStart = Math.random() * 10 + 10;
-      spinTime = 0;
+      // Устанавливаем новое время вращения от 15 до 20 секунд (15000-20000 мс)
+      spinTimeTotal = Math.random() * (20000 - 15000) + 15000;
+      spinStartTime = performance.now(); // сохраняем время старта
       requestAnimationFrame(rotateWheel);
     }
 
-    function rotateWheel() {
-      spinTime += 3;
-      if (spinTime >= spinTimeTotal) {
+    function rotateWheel(timestamp) {
+      const elapsed = timestamp - spinStartTime;
+      if (elapsed >= spinTimeTotal) {
         stopWheel();
         return;
       }
-      const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+      const spinAngle = spinAngleStart - easeOut(elapsed, 0, spinAngleStart, spinTimeTotal);
       startAngle += (spinAngle * Math.PI / 180);
       drawWheel();
       requestAnimationFrame(rotateWheel);
