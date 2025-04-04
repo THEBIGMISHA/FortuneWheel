@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=5.0">
   <title>Казик.tbm</title>
   <link rel="icon" href="src/favicon.ico"><!-- 32×32 -->
   <style>
@@ -235,9 +235,38 @@
         padding: 2.5rem;
       }
     }
+
+    /* Добавляем стиль для ссылки-кнопки */
+    a.button {
+      display: inline-block;
+      padding: clamp(0.8rem, 2vw, 1rem);
+      margin: clamp(0.5rem, 1.5vw, 0.8rem) 0;
+      border: none;
+      border-radius: clamp(6px, 1.5vw, 8px);
+      background: linear-gradient(45deg, var(--blood) 0%, #CC0000 100%);
+      color: var(--light);
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1001;
+    }
+    a.button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 26, 26, 0.4);
+    }
+    a.button:active {
+      transform: translateY(1px);
+    }
   </style>
 </head>
 <body>
+  <a href="../" id="backLink" class="button">Назад (../)</a>
   <h1>Адская колесница</h1>
   
   <div id="mainContainer">
