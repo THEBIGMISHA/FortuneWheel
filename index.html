@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=5.0">
+  <title>Казик.tbm</title>
+  <link rel="icon" href="src/favicon.ico"><!-- 32×32 -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Exo+2:wght@400;700&display=swap');
+    
+    :root {
+      --blood: #FF1A1A;
+      --dark: #0A0A0A;
+      --light: #F0F0F0;
+      --accent: #FF6666;
+      --base-size: clamp(0.875rem, 2vw, 1rem);
+      overflow-x: hidden; /* отключает горизонтальную прокрутку */
+      overflow-y: hidden; /* отключает вертикальную прокрутку */
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(45deg, #1a1a1a 0%, #0a0a0a 100%);
+      font-family: 'Exo 2', sans-serif;
+      color: var(--light);
+      padding: clamp(10px, 3vw, 20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      margin: clamp(1rem, 3vw, 2rem) 0;
+      font-family: 'Creepster', cursive;
+      color: var(--blood);
+      text-shadow: 0 0 15px rgba(255, 26, 26, 0.5);
+      letter-spacing: 2px;
+      line-height: 1.2;
+    }
+
+    /* Медиа-запрос для скрытия заголовка */
+    @media (max-width: 1919px) {
+      h1 { display: none; }
+    }
+
+    #mainContainer {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: clamp(20px, 4vw, 50px);
+      width: 100%;
+      max-width: 1440px;
+      flex-wrap: wrap;
+    }
+
+    #wheelContainer {
+      position: relative;
+      width: clamp(280px, 90vw, 600px);
+      height: clamp(280px, 90vw, 600px);
+      filter: drop-shadow(0 0 20px rgba(255, 26, 26, 0.3));
+    }
+
+    canvas {
+      border: clamp(6px, 1vw, 12px) solid var(--blood);
+      border-radius: 50%;
+      background: #1A1A1A;
+      transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pointer {
+      position: absolute;
+      left: calc(50% + 280px - 1px + 20px);
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 0;
+      height: 0;
+      border-top: clamp(20px, 5vw, 35px) solid transparent;
+      border-bottom: clamp(20px, 5vw, 35px) solid transparent;
+      border-right: clamp(30px, 8vw, 50px) solid var(--blood);
+      filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.7));
+      animation: pulse 1.5s infinite;
+      z-index: 2;
+    }
+
+    #rightColumn {
+      width: clamp(280px, 90vw, 380px);
+      padding: clamp(1rem, 3vw, 2rem);
+      background: rgba(30, 30, 30, 0.9);
+      border-radius: clamp(10px, 2vw, 15px);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 102, 102, 0.2);
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #inputNames {
+      width: 100%;
+      max-width: 100%;
+      height: clamp(100px, 30vh, 150px);
+      margin-bottom: clamp(1rem, 2vw, 1.5rem);
+      padding: clamp(0.5rem, 2vw, 1рем);
+      border: clamp(1px, 0.3vw, 2px) solid var(--blood);
+      border-radius: clamp(6px, 1.5vw, 10px);
+      background: rgba(20, 20, 20, 0.8);
+      color: var(--light);
+      font-size: clamp(0.8rem, 2.5vw, 1rem);
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: clamp(0.8rem, 2vw, 1rem);
+      margin: clamp(0.5rem, 1.5vw, 0.8rem) 0;
+      border: none;
+      border-radius: clamp(6px, 1.5vw, 8px);
+      background: linear-gradient(45deg, var(--blood) 0%, #CC0000 100%);
+      color: var(--light);
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 26, 26, 0.4);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .status {
+      width: 100%; /* Растягиваем на всю ширину */
+      margin-top: clamp(1rem, 3vw, 1.5rem);
+      padding: clamp(0.8rem, 2vw, 1rem);
+      background: rgba(255, 26, 26, 0.1);
+      border-radius: 8px;
+      text-align: center;
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      border: 1px solid var(--blood);
+      backdrop-filter: blur(5px);
+      box-sizing: border-box;
+    }
+
+    .last-victims {
+      width: 100%; /* Растягиваем на всю ширину */
+      margin-top: clamp(0.8rem, 2vw, 1rem);
+      padding: clamp(0.8rem, 2vw, 1rem);
+      background: rgba(255, 26, 26, 0.1);
+      border-radius: 8px;
+      border: 1px solid var(--blood);
+      font-size: clamp(0.8rem, 2.5vw, 0.9em);
+      box-sizing: border-box;
+    }
+
+    #victimList {
+      list-style: none;
+      padding: 0;
+      margin: clamp(0.3rem, 1vw, 0.5rem) 0 0;
+    }
+
+    #victimList li {
+      padding: clamp(0.2rem, 1vw, 0.3rem) 0;
+      color: var(--accent);
+      font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+    }
+
+    #winnerOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 1000;
+    }
+
+    #winnerOverlay.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    #winnerText {
+      font-size: clamp(2rem, 12vw, 4.5rem);
+      text-transform: uppercase;
+      color: var(--blood);
+      text-shadow: 0 0 30px rgba(255, 26, 26, 0.8);
+      font-family: 'Creepster', cursive;
+      animation: textGlow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    @keyframes textGlow {
+      0%, 100% { text-shadow: 0 0 30px rgba(255, 26, 26, 0.8); }
+      50% { text-shadow: 0 0 50px rgba(255, 26, 26, 1); }
+    }
+
+    @media (max-width: 768px) {
+      #mainContainer {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    @media (min-width: 1920px) {
+      #mainContainer {
+        gap: 60px;
+      }
+      #wheelContainer {
+        width: 700px;
+        height: 700px;
+      }
+      #rightColumn {
+        width: 450px;
+        padding: 2.5rem;
+      }
+    }
+
+    /* Добавляем стиль для ссылки-кнопки */
+    a.button {
+      display: inline-block;
+      padding: clamp(0.8rem, 2vw, 1rem);
+      margin: clamp(0.5rem, 1.5vw, 0.8rem) 0;
+      border: none;
+      border-radius: clamp(6px, 1.5vw, 8px);
+      background: linear-gradient(45deg, var(--blood) 0%, #CC0000 100%);
+      color: var(--light);
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1001;
+    }
+    a.button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 26, 26, 0.4);
+    }
+    a.button:active {
+      transform: translateY(1px);
+    }
+  </style>
+</head>
+<body>
+  <a href="javascript:history.back()" id="backLink" class="button">Назад</a>
+  <h1>Адская колесница</h1>
+  
+  <div id="mainContainer">
+    <div id="wheelContainer">
+      <canvas id="wheelCanvas" width="600" height="600"></canvas>
+    </div>
+    
+    <div id="rightColumn">
+      <textarea id="inputNames" placeholder="Введите имена через запятую, точку с запятой или перенос строки"></textarea>
+      <button id="updateListButton">Обновить</button>
+      <button id="spinButton">Крутить</button>
+      
+      <div class="status">
+        Осталось участников: <span id="participantCount">0</span>
+      </div>
+      
+      <div class="last-victims">
+        Последние результаты: 
+        <ul id="victimList"></ul>
+      </div>
+      <p>© 2025 thebigmisha.ru<br>Все права защищены.<br>Код проекта на <a href="https://github.com/THEBIGMISHA/FortuneWheel">GitHub</a><br>Разработчик: М.В. Николаев<br>Контактный email: <a href="mailto:admin@thebigmisha.ru">admin@thebigmisha.ru</a></p>
+    </div>
+  </div>
+  
+  <div id="winnerOverlay">
+    <div id="winnerText"></div>
+  </div>
+  
+  <audio id="spinSound" src="src/spin.mp3"></audio>
+  <audio id="winSound" src="src/win.mp3"></audio>
+  
+  <script>
+    const canvas = document.getElementById("wheelCanvas");
+    const ctx = canvas.getContext("2d");
+    const spinButton = document.getElementById("spinButton");
+    const updateListButton = document.getElementById("updateListButton");
+    const inputNames = document.getElementById("inputNames");
+    const participantCount = document.getElementById("participantCount");
+    const victimList = document.getElementById("victimList");
+    const winnerOverlay = document.getElementById("winnerOverlay");
+    const winnerText = document.getElementById("winnerText");
+    const spinSound = document.getElementById("spinSound");
+    const winSound = document.getElementById("winSound");
+
+    let participants = [];
+    let lastVictims = [];
+    let isSpinning = false;
+    let startAngle = 0;
+    let arc = 0;
+    let spinTimeTotal; // время вращения (устанавливается при каждом запуске)
+    let spinAngleStart = 0;
+    let spaceTimer = null;
+    let spinStartTime = 0; // добавляем переменную для хранения времени начала вращения
+
+    function updateParticipants() {
+      const input = inputNames.value;
+      participants = input.split(/[,;\n]+/).map(n => n.trim()).filter(n => n !== "");
+      participantCount.textContent = participants.length;
+      startAngle = 0;
+      drawWheel();
+    }
+
+    function drawWheel() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (participants.length === 0) return;
+      arc = (2 * Math.PI) / participants.length;
+      participants.forEach((name, i) => {
+        const angle = startAngle + i * arc;
+        ctx.fillStyle = getColor(i);
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, canvas.height / 2);
+        ctx.arc(canvas.width / 2, canvas.height / 2, 280, angle, angle + arc);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, canvas.height / 2);
+        ctx.lineTo(
+          canvas.width / 2 + Math.cos(angle) * 280,
+          canvas.height / 2 + Math.sin(angle) * 280
+        );
+        ctx.stroke();
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(angle + arc / 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = 'bold 20px Creepster';
+        ctx.textAlign = 'right';
+        ctx.fillText(name, 250, 10);
+        ctx.restore();
+      });
+
+      const markerX = canvas.width / 2 + 280 - 1 + 20;
+      const markerY = canvas.height / 2;
+      ctx.beginPath();
+      ctx.moveTo(markerX, markerY - 15);
+      ctx.lineTo(markerX - 20, markerY);
+      ctx.lineTo(markerX, markerY + 15);
+      ctx.closePath();
+      ctx.fillStyle = "#FF1A1A";
+      ctx.fill();
+    }
+
+    function getColor(index) {
+      const colors = ["#FF1A1A", "#CC0000", "#990000", "#660000", "#330000"];
+      return colors[index % colors.length];
+    }
+
+    function spinWheel() {
+      if (isSpinning || participants.length === 0) return;
+      isSpinning = true;
+      spinSound.currentTime = 0;
+      spinSound.play();
+      spinAngleStart = Math.random() * 20 + 10;
+      spinTimeTotal = Math.random() * 15000 + 30000; // Random between 30-45 seconds (30000-45000ms)
+      spinStartTime = performance.now();
+      requestAnimationFrame(rotateWheel);
+    }
+
+    function rotateWheel(timestamp) {
+      const elapsed = timestamp - spinStartTime;
+      if (elapsed >= spinTimeTotal) {
+        stopWheel();
+        return;
+      }
+      const spinAngle = spinAngleStart - easeOut(elapsed, 0, spinAngleStart, spinTimeTotal);
+      startAngle += (spinAngle * Math.PI / 180);
+      drawWheel();
+      requestAnimationFrame(rotateWheel);
+    }
+
+    function easeOut(t, b, c, d) {
+      t /= d;
+      return c * (--t * t * t + 1) + b;
+    }
+
+    function stopWheel() {
+      isSpinning = false;
+      spinSound.pause();
+      let effectiveAngle = (360 - ((startAngle * 180 / Math.PI) % 360)) % 360;
+      let arcDegrees = 360 / participants.length;
+      let index = Math.floor(effectiveAngle / arcDegrees) % participants.length;
+      const victim = participants.splice(index, 1)[0];
+      lastVictims.unshift(victim);
+      if (lastVictims.length > 3) lastVictims.pop();
+      victimList.innerHTML = lastVictims.map(name => `<li>${name}</li>`).join('');
+      participantCount.textContent = participants.length;
+      winnerText.textContent = victim;
+      winnerOverlay.classList.add("show");
+      winSound.currentTime = 0;
+      winSound.play();
+      setTimeout(() => {
+        winnerOverlay.classList.remove("show");
+        drawWheel();
+      }, 3000);
+    }
+
+    spinButton.addEventListener("click", spinWheel);
+    updateListButton.addEventListener("click", updateParticipants);
+
+    inputNames.addEventListener('input', () => {
+      participantCount.textContent = inputNames.value.split(/[,;\n]+/).map(n => n.trim()).filter(n => n !== "").length;
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && !spaceTimer) {
+        e.preventDefault();
+        spaceTimer = setTimeout(() => {
+          spinWheel();
+          spaceTimer = null;
+        }, 3000);
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      if (e.code === "Space" && spaceTimer) {
+        clearTimeout(spaceTimer);
+        spaceTimer = null;
+      }
+    });
+
+    updateParticipants();
+  </script>
+</body>
+</html>
